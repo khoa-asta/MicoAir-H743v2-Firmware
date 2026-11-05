@@ -441,7 +441,7 @@ void RateControlTask_Run(void *argument)
 
         /* Update sensor age before processing the current event. */
         CheckImuAges(now);
-        ReadAiding(now, &baro, &mag);
+        ReadAiding(now, &baro, &mag);  // Check Baro, Compass
 
         if ((flags & osFlagsError) != 0U)
         {

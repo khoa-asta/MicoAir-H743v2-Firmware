@@ -159,7 +159,7 @@ bool FlightControl_Init(const ControlConfig_t *config, uint32_t frequency, uint3
 
     s_control.config = *config;
     s_control.tick_freq = frequency;
-    s_control.mode = CONTROL_RATE;
+    s_control.mode = CONTROL_RATE; //Chế độ khởi tạo
 
     ManualControl_Init(&s_control.manual);
 

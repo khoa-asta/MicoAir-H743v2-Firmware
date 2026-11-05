@@ -19,7 +19,7 @@
 /* Physical assumption for THIS bench checkpoint: motors off, board at rest
  * or gently tilted and then held still. Norm/rate gates do not establish
  * low translational acceleration in flight. Replace this policy before flight. */
-#define RATE_EST_BENCH_GRAVITY_AID     1U
+#define RATE_EST_BENCH_GRAVITY_AID     0U
 
 /* No validated QMC mapping/calibration was supplied. Keep 0 for checkpoint 2B.
  * To enable later: supply BOTH offset and calibrated sensor->body FRD matrix,

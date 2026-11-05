@@ -43,8 +43,7 @@ typedef struct
     bool horizontal_aided;         /* Luon false o ban nay. */
 } Estimator_Output_t;
 
-/* Dat bien nay static/global, khong dat tren stack task IMU. */
-/* Moi instance chi duoc mot task so huu. Khong goi tu ISR. */
+
 typedef struct
 {
     Quaternion_t q_nb;

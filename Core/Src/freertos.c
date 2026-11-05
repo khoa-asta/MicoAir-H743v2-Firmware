@@ -44,19 +44,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define IMU_FLAG_ACC_DRDY          (1UL << 0)
-#define IMU_FLAG_GYRO_DRDY         (1UL << 1)
-#define IMU_FLAG_ACC_DMA_DONE      (1UL << 2)
-#define IMU_FLAG_GYRO_DMA_DONE     (1UL << 3)
-#define IMU_FLAG_ACC_DMA_ERROR     (1UL << 4)
-#define IMU_FLAG_GYRO_DMA_ERROR    (1UL << 5)
 
-#define IMU_EVENT_MASK             (IMU_FLAG_ACC_DRDY      | \
-                                    IMU_FLAG_GYRO_DRDY     | \
-                                    IMU_FLAG_ACC_DMA_DONE  | \
-                                    IMU_FLAG_GYRO_DMA_DONE | \
-                                    IMU_FLAG_ACC_DMA_ERROR | \
-                                    IMU_FLAG_GYRO_DMA_ERROR)
 
 #define RC_LOAD_TEST_ENABLE 1U
 /* USER CODE END PD */

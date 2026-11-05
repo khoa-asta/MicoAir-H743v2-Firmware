@@ -338,6 +338,7 @@ bool Estimator_Init(Estimator_t *est, const Estimator_Config_t *config, const fl
     return true;
 }
 
+/* Dự đoán trạng thái */
 bool Estimator_Predict(Estimator_t *est, const float gyro_rad_s[3], const float accel_mps2[3], float dt_s)
 {
     float r[9];
@@ -423,15 +424,16 @@ bool Estimator_Predict(Estimator_t *est, const float gyro_rad_s[3], const float 
     return true;
 }
 
+/* Hiệu chỉnh */
 bool Estimator_UpdateAccel(Estimator_t *est, const float accel_mps2[3], bool low_dynamics)
 {
     const float gravity_force_n[3] = {0.0f, 0.0f, -GRAVITY};
-    float r[9];
+    float r[9];                           /* Ma trận quay body sang navigation */
     float force_b[3];
-    float measured_force[3];
-    float residual[3];
-    float h[3][N] = {{0.0f}};
-    float skew[9];
+    float measured_force[3];              /* Accel đã hiệu chỉnh */
+    float residual[3];                    /* sai số giữa dữ liệu đo và dữ liệu dự đoán  */
+    float h[3][N] = {{0.0f}};             /* Jacobian */
+    float skew[9];                        /* Ma trận skew của trọng lực */
 
     if (est == NULL || !est->initialized || !est->healthy || !VectorValid(accel_mps2, 300.0f))
     {
@@ -454,6 +456,7 @@ bool Estimator_UpdateAccel(Estimator_t *est, const float accel_mps2[3], bool low
     Skew(gravity_force_n, skew);
     for (int i = 0; i < 3; ++i)
     {
+    	/* Residaual = số đo - (lực dự đoán + bias accel) */
         residual[i] = accel_mps2[i] - (force_b[i] + est->ba[i]);
         h[i][ACCEL_BIAS + i] = 1.0f;
         for (int j = 0; j < 3; ++j)
@@ -473,6 +476,7 @@ bool Estimator_UpdateAccel(Estimator_t *est, const float accel_mps2[3], bool low
     return true;
 }
 
+/* HIệu chỉnh bằng vector từ trường */
 bool Estimator_UpdateMag(Estimator_t *est, const float mag_body_ut[3])
 {
     float r[9];
@@ -485,11 +489,13 @@ bool Estimator_UpdateMag(Estimator_t *est, const float mag_body_ut[3])
     {
         return false;
     }
+    /* So sánh độ lệnh với tỷ lệ ban đầu */
     if (fabsf(VectorNorm(mag_body_ut) - est->mag_reference_norm) > est->config.mag_norm_gate * est->mag_reference_norm)
     {
         est->rejected_mag++;
         return false;
     }
+    /* Đưa vector tham chiếu từ navigation về body để dự đoán số đo */
     if (!Quaternion_ToRotationMatrix(&est->q_nb, r) || !Quaternion_RotateVectorInverse(&est->q_nb, est->mag_reference_n, expected))
     {
         est->healthy = false;
@@ -498,6 +504,7 @@ bool Estimator_UpdateMag(Estimator_t *est, const float mag_body_ut[3])
     Skew(est->mag_reference_n, skew);
     for (int i = 0; i < 3; ++i)
     {
+    	/* Residual = từ trường thu nhập - dự đoán */
         residual[i] = mag_body_ut[i] - expected[i];
         for (int j = 0; j < 3; ++j)
         {
@@ -516,6 +523,7 @@ bool Estimator_UpdateMag(Estimator_t *est, const float mag_body_ut[3])
     return true;
 }
 
+/* Hiệu chỉnh bằng khí áp độ cao */
 bool Estimator_UpdateBaro(Estimator_t *est, float altitude_m)
 {
     float residual[3] = {0.0f};
@@ -525,6 +533,7 @@ bool Estimator_UpdateBaro(Estimator_t *est, float altitude_m)
     {
         return false;
     }
+    /* Residual = altitude - (reference - p_D) */
     residual[0] = altitude_m - est->baro_reference_m + est->p_n[2];
     h[0][POSITION + 2] = -1.0f;
     if (!Correct(est, residual, h, 1, est->config.baro_std_m * est->config.baro_std_m))
@@ -551,8 +560,10 @@ bool Estimator_GetOutput(const Estimator_t *est, Estimator_Output_t *out)
     {
         out->body_rate_rad_s[i] = est->last_gyro[i] - est->bg[i];
     }
+
     out->height_m = -est->p_n[2];
     out->climb_rate_mps = -est->v_n[2];
+    /* Cờ an toàn, kiểm tra dữ liệu mới nhất  */
     out->numerical_ok = est->healthy;
     out->tilt_aided = est->healthy && est->accel_age_s < 0.5f;
     out->yaw_aided = est->healthy && est->mag_enabled && est->mag_age_s < 0.5f;

@@ -10,7 +10,7 @@ typedef enum
 {
     FLIGHT_DISARMED = 0,
     FLIGHT_ARMED,
-    FLIGHT_LOCKOUT,
+    FLIGHT_LOCKOUT, // Bock
     FLIGHT_FAULT
 } FlightState_t;
 
